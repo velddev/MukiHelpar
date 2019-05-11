@@ -27,9 +27,7 @@ class AntiSpam:
                 counter += 1
             if counter > 3:
                 timespan = float((datetime.datetime.utcnow()-oldMessage.timestamp)/timedelta(milliseconds=1))   
-                #print(str(timespan) + "ms")
                 avg = timespan / counter / 1000
-                #print(avg)
                 if avg < 0.9:
                     muteMember = discord.utils.find(lambda m: m.id == message.author.id, message.server.members)
                     muteRole = discord.utils.find(lambda r: r.id == self.mute_role_id, message.server.roles) 
