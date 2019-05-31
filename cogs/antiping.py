@@ -7,7 +7,7 @@ def config_load():
     with open('config/settings.json', 'r', encoding='utf-8-sig') as doc:
         return json.load(doc)
 
-class AntiPing:
+class AntiPing(commands.Cog):
     def __init__(self, bot):
         config = config_load()
         self.mute_role_id = config['mute_role']

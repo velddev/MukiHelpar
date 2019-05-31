@@ -25,14 +25,14 @@ def keys_load():
 class Bot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(
-            command_prefix=self.get_prefix_
+            command_prefix = self.get_prefix_
         )
         config = config_load()
         self.server_id = config['server']
         self.mute_role_id = config['mute_role']
         self.modlog_channel_id = config['modlog_channel']
         self.log_channel_id = config['log_channel']
-        self.remove_command('help') #Fuck Discord.py default help command
+        self.remove_command('help') # Fuck Discord.py default help command
         self.app_info = None
         self.loop.create_task(self.load_all_extensions())
 
@@ -134,10 +134,9 @@ async def run():
     try:
         await bot.start(config['token'])
     except KeyboardInterrupt:
-        await bot.close()     
+        await bot.close()
        
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    
     loop = asyncio.get_event_loop()
     loop.run_until_complete(run())

@@ -8,7 +8,7 @@ def config_load():
     with open('config/settings.json', 'r', encoding='utf-8-sig') as doc:
         return json.load(doc)
 
-class Moderation:
+class Moderation(commands.Cog):
 
     def __init__(self, bot):
         config = config_load()
@@ -71,14 +71,14 @@ class Moderation:
             temp_member = discord.Object(id=ctx.message.content.split(' ',1)[1])
             temp_member.server = discord.Object(id=ctx.message.server.id)
             await self.bot.ban(temp_member)
-            await self.bot.send_message(discord.Object(id=self.modlog_channel_id), ' (' + temp_member.id + ') banned for (blank) by ' + ctx.message.author.name)
+            await self.log(f'({temp_member.id}) banned for (blank) by {ctx.message.author.name}')
     
     @commands.command(pass_context=True)
     async def kick(self, ctx):
         if not ctx.message.channel.permissions_for(ctx.message.author).kick_members:
             await self.bot.say("You don't have permission to do this.")
             return
-        if len(ctx.message.mentions)==1:
+        if len(ctx.message.mentions) == 1:
             try:
                 await self.bot.send_message(discord.User(id=ctx.message.mentions[0].id), "You have been kicked from Miki server. You can rejoin via <https://discord.gg/39Xpj7K>; just don't make the same mistake again or it will lead to a ban.")
             except:
@@ -98,17 +98,20 @@ class Moderation:
             await self.bot.send_message(discord.User(id=ctx.message.content.split(' ',2)[1]), 'You have been banned from Miki server. If you believe this is an error, consult with mods.')
         except:
             pass
-        try:
-            temp_member = discord.Object(id=ctx.message.content.split(' ',2)[1])
-            temp_member.server = discord.Object(id=ctx.message.server.id)
-            await self.bot.kick(temp_member)
-            await self.bot.send_message(discord.Object(id=self.modlog_channel_id), ' (' + temp_member.id + ') kicked for ' +ctx.message.content.split(' ',2)[2] + ' by ' + ctx.message.author.name)
-        except:
-            temp_member = discord.Object(id=ctx.message.content.split(' ',1)[1])
-            temp_member.server = discord.Object(id=ctx.message.server.id)
-            await self.bot.kick(temp_member)
-            await self.bot.send_message(discord.Object(id=self.modlog_channel_id), ' (' + temp_member.id + ') kicked for (blank) by ' + ctx.message.author.name)
-    
+
+        args = ctx.message.content.split(' ')
+        if(len(args) == 1): # Skip if there's no arguments.
+            return
+
+        member = discord.Object(id=args[1])
+        member.server = discord.Object(id=ctx.message.server.id)
+
+        reason = "(blank)"
+        if(len(args) > 1): # Add a reason if there's more than 2 arguments
+            reason = " ".join(args[2:len(args)])
+
+        await self.log(f'({member.id}) kicked for {reason} by {ctx.message.author.name}')
+        await self.bot.kick(member)
     
     @commands.command(pass_context=True)
     async def mute(self, ctx):
@@ -118,8 +121,8 @@ class Moderation:
         for diffrole in ctx.message.server.roles:
             if diffrole.id == self.mute_role_id:
                 actual_role = diffrole
-                break    
-        if len(ctx.message.mentions)> 0:
+                break
+        if len(ctx.message.mentions) > 0:
             for mention in ctx.message.mentions:
                 await self.bot.add_roles(mention, actual_role)
           
@@ -148,8 +151,9 @@ class Moderation:
             for deadRole in rolesRemoved:
                 tempM = tempM + deadRole + ', '
         await self.bot.say(tempM)        
-                  
-            
-        
+
+    async def log(message):
+        self.bot.send_message(discord.Object(id=self.modlog_channel_id), message)
+
 def setup(bot):
     bot.add_cog(Moderation(bot))
